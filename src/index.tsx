@@ -5,7 +5,7 @@ import './index.css';
 // TODO:
 //  [x] add and remove items
 //  [x] toggle items from being done to undone
-//  [ ] filter out done items
+//  [x] filter out done items
 //  [ ] maybe animations
 //  [ ] maybe persistence (localstorage works fine)
 
@@ -34,8 +34,8 @@ const ControlPanel = (props: { onAddButtonClick: (text: string) => void, onFilte
     )
 };
 
-const Item = (props: { text: string, complete: boolean, key: React.Key, onChange: (event: ChangeEvent<HTMLInputElement>, text: string) => void }) =>
-    <li key={props.key}>
+const Item = (props: { text: string, complete: boolean, onChange: (event: ChangeEvent<HTMLInputElement>, text: string) => void }) =>
+    <li key={props.text}>
         <div className={props.complete ? "todo-item-done" : "todo-item"}>
             <input type="checkbox"
                    defaultChecked={props.complete}
@@ -53,6 +53,7 @@ const App = () => {
     const [isFiltered, setIsFiltered] = useState(false);
 
     const addItem = (text: string) => {
+        if (text.length <= 0 || items.includes(text)) return;
         setItems(items.concat(text));
         setIncompleteItems(incompleteItems.concat(text));
     }
@@ -76,10 +77,9 @@ const App = () => {
             />
             <div>
                 <ul>
-                    {displayItems.map((item, key) =>
+                    {displayItems.map(item =>
                         <Item text={item}
                               complete={incompleteItems.indexOf(item) === -1}
-                              key={key}
                               onChange={boxChanged}
                         />
                     )}
