@@ -34,41 +34,38 @@ const ControlPanel = (props: { onAddButtonClick: (text: string) => void, onFilte
     )
 };
 
-const Item = (props: { text: string, key: React.Key, onChange: (event: ChangeEvent<HTMLInputElement>) => void }) => {
-    // const [text, setText] = useState(props.text);
-    // const [checked, setChecked] = useState(false);
-    const [done, setDone] = useState(false);
-
-    return (
-        <li key={props.key}>
-            <div className={done ? "todo-item-done" : "todo-item"}>
-                <input type="checkbox"
-                       onChange={(event) => {
-                           setDone(event.target.checked)
-                           props.onChange(event)
-                       }}
-                />
-                <p className="todo-item-text">{props.text}</p>
-            </div>
-        </li>
-    )
-}
+const Item = (props: { text: string, complete: boolean, key: React.Key, onChange: (event: ChangeEvent<HTMLInputElement>, text: string) => void }) =>
+    <li key={props.key}>
+        <div className={props.complete ? "todo-item-done" : "todo-item"}>
+            <input type="checkbox"
+                   defaultChecked={props.complete}
+                   onChange={(event) => {
+                       props.onChange(event, props.text)
+                   }}
+            />
+            <p className="todo-item-text">{props.text}</p>
+        </div>
+    </li>
 
 const App = () => {
-    const [items, setItems] = useState(Array<{ text: string, completed: boolean }>());
+    const [items, setItems] = useState(Array<string>());
+    const [incompleteItems, setIncompleteItems] = useState(Array<string>());
     const [isFiltered, setIsFiltered] = useState(false);
 
     const addItem = (text: string) => {
-        setItems(items.concat({text: text, completed: false}));
+        setItems(items.concat(text));
+        setIncompleteItems(incompleteItems.concat(text));
     }
 
-    const boxChanged = (checked: boolean, index: number) => {
-        const newItem = items[index];
-        newItem.completed = checked;
-        setItems(items.slice(0, index).concat(newItem).concat(items.slice(index + 1)));
+    const boxChanged = (event: ChangeEvent<HTMLInputElement>, text: string) => {
+        if (event.target.checked) {
+            setIncompleteItems(incompleteItems.filter(item => item !== text));
+        } else {
+            setIncompleteItems(incompleteItems.concat(text));
+        }
     }
 
-    const displayItems = () => items.filter((item) => !(item.completed && isFiltered))
+    const displayItems = isFiltered ? incompleteItems : items;
 
     return (
         <div>
@@ -79,10 +76,11 @@ const App = () => {
             />
             <div>
                 <ul>
-                    {displayItems().map((item, key) =>
-                        <Item text={item.text}
+                    {displayItems.map((item, key) =>
+                        <Item text={item}
+                              complete={incompleteItems.indexOf(item) === -1}
                               key={key}
-                              onChange={(event) => boxChanged(event.target.checked, key)}
+                              onChange={boxChanged}
                         />
                     )}
                 </ul>
