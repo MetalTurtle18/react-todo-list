@@ -1,4 +1,4 @@
-import React, {ChangeEvent, useState} from 'react';
+import React, {ChangeEvent, useEffect, useRef, useState} from 'react';
 import ReactDOM from 'react-dom';
 import 'bootstrap/dist/css/bootstrap.css';
 import './index.css';
@@ -11,7 +11,7 @@ import Container from 'react-bootstrap/Container';
 //  [x] toggle items from being done to undone
 //  [x] filter out done items
 //  [ ] maybe animations
-//  [ ] maybe persistence (localstorage works fine)
+//  [x] maybe persistence (localstorage works fine)
 
 const ControlPanel = (props: { onAddButtonClick: (text: string) => void, onFilterButtonClick: () => void, isFiltered: boolean, onClearCompleteButtonClicked: () => void, areCompleteItems: boolean }) => {
     const [text, setText] = useState('');
@@ -56,9 +56,24 @@ const Item = (props: { text: string, complete: boolean, onChange: (event: Change
     </li>
 
 const App = () => {
-    const [items, setItems] = useState(Array<string>());
-    const [incompleteItems, setIncompleteItems] = useState(Array<string>());
+    const [items, setItems] = useState(localStorage.getItem('items')
+        ? JSON.parse(localStorage.getItem('items') || '[]')
+        : []);
+    const [incompleteItems, setIncompleteItems] = useState(localStorage.getItem('incompleteItems')
+        ? JSON.parse(localStorage.getItem('incompleteItems') || '[]')
+        : []);
     const [isFiltered, setIsFiltered] = useState(false);
+
+    const isFirstRender = useRef(true)
+
+    useEffect(() => {
+        if (isFirstRender.current) {
+            isFirstRender.current = false;
+            return;
+        }
+        localStorage.setItem('items', JSON.stringify(items));
+        localStorage.setItem('incompleteItems', JSON.stringify(incompleteItems));
+    }, [items, incompleteItems]);
 
     const addItem = (text: string) => {
         if (text.length <= 0 || items.includes(text)) return;
@@ -67,12 +82,12 @@ const App = () => {
     }
 
     const boxChanged = (event: ChangeEvent<HTMLInputElement>, text: string) => {
-        if (event.target.checked) {
-            setIncompleteItems(incompleteItems.filter(item => item !== text));
-        } else {
+        if (event.target.checked)
+            setIncompleteItems(incompleteItems.filter((item: string) => item !== text));
+        else
             setIncompleteItems(incompleteItems.concat(text));
-        }
     }
+
 
     const displayItems = isFiltered ? incompleteItems : items;
 
@@ -90,7 +105,7 @@ const App = () => {
             />
             <div>
                 <ul>
-                    {displayItems.map(item =>
+                    {displayItems.map((item: string) =>
                         <Item text={item}
                               complete={incompleteItems.indexOf(item) === -1}
                               onChange={boxChanged}
