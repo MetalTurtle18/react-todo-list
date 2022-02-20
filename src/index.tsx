@@ -1,6 +1,10 @@
 import React, {ChangeEvent, useState} from 'react';
 import ReactDOM from 'react-dom';
+import 'bootstrap/dist/css/bootstrap.css';
 import './index.css';
+import Alert from "react-bootstrap/Alert";
+import Button from 'react-bootstrap/Button';
+import Container from 'react-bootstrap/Container';
 
 // TODO:
 //  [x] add and remove items
@@ -9,41 +13,45 @@ import './index.css';
 //  [ ] maybe animations
 //  [ ] maybe persistence (localstorage works fine)
 
-const ControlPanel = (props: { onAddButtonClick: (text: string) => void, onFilterButtonClick: () => void }) => {
+const ControlPanel = (props: { onAddButtonClick: (text: string) => void, onFilterButtonClick: () => void, isFiltered: boolean, onClearCompleteButtonClicked: () => void, areCompleteItems: boolean }) => {
     const [text, setText] = useState('');
 
     return (
         <div>
-            <button onClick={() => {
+            <Button variant="secondary" onClick={() => {
                 props.onAddButtonClick(text);
                 setText('');
-            }}>
+            }} disabled={text === ''}>
                 Add item
-            </button>
+            </Button>
             <input type="text"
+                   className="item-input"
                    placeholder="Enter item"
                    value={text}
                    onChange={(event) =>
                        setText(event.target.value)
                    }
             />
-            <button onClick={props.onFilterButtonClick}>
-                Show Incomplete
-            </button>
+            <Button variant="secondary" onClick={props.onFilterButtonClick}>
+                Show {props.isFiltered ? "all" : "incomplete"}
+            </Button>
+            <Button variant="danger" onClick={props.onClearCompleteButtonClicked} disabled={!props.areCompleteItems}>
+                Clear completed
+            </Button>
         </div>
     )
 };
 
 const Item = (props: { text: string, complete: boolean, onChange: (event: ChangeEvent<HTMLInputElement>, text: string) => void }) =>
     <li key={props.text}>
-        <div className={props.complete ? "todo-item-done" : "todo-item"}>
+        <div>
             <input type="checkbox"
                    defaultChecked={props.complete}
                    onChange={(event) => {
                        props.onChange(event, props.text)
                    }}
             />
-            <p className="todo-item-text">{props.text}</p>
+            <label className={"todo-item-label" + (props.complete ? " todo-item-label-done" : "")}>{props.text}</label>
         </div>
     </li>
 
@@ -69,11 +77,16 @@ const App = () => {
     const displayItems = isFiltered ? incompleteItems : items;
 
     return (
-        <div>
+        <Container fluid>
             <ControlPanel onAddButtonClick={addItem}
                           onFilterButtonClick={() =>
                               setIsFiltered(!isFiltered)
                           }
+                          isFiltered={isFiltered}
+                          onClearCompleteButtonClicked={() =>
+                              setItems(incompleteItems)
+                          }
+                          areCompleteItems={items.length !== incompleteItems.length}
             />
             <div>
                 <ul>
@@ -85,7 +98,11 @@ const App = () => {
                     )}
                 </ul>
             </div>
-        </div>
+            {items.length === 0
+                ? <Alert variant="dark">Add items to get started</Alert>
+                : null
+            }
+        </Container>
     )
 }
 

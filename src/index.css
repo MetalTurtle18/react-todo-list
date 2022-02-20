@@ -7,15 +7,22 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
-.todo-item .todo-item-done {
-    float: left;
+.btn {
+    margin: 10px;
 }
 
-.todo-item-done {
+.item-input {
+    padding: 5px;
+    border: 2px solid #6E757C;
+    border-radius: 5px;
+}
+
+.todo-item-label {
+    margin-left: 5px;
+    padding-top: 2px;
+}
+
+.todo-item-label-done {
     text-decoration: line-through;
-    color: limegreen;
-}
-
-.todo-item-text {
-    margin-left: 10px;
+    color: lightslategray;
 }
